@@ -19,6 +19,37 @@ import argparse
 __author__ = "???"
 
 
+special_files=[]
+def get_special_paths(directory):
+    special_files=[]
+    new_directory_log=os.listdir(directory)
+    for filename in new_directory_log:
+        specials= re.search(r'__(\w+)__',filename)
+        if specials:
+            special_files.append(os.path.abspath(filename))
+    
+            
+    return special_files    
+
+def copy_to(new_directory_log,directory):
+    if not os.path.exists(directory):
+        os.mkdir(directory)
+    for f in new_directory_log:
+        file_name=os.path.basename(f)
+        new_path=os.path.join(directory,file_name)
+        shutil.copy(f,new_path)
+
+def zip_to(new_directory_log,zippath):
+    cmd= 'zip -j' + zippath + ' '+' '.join(new_directory_log)
+    print("Command is" + cmd)
+    cmd_split = cmd.split()
+    try:
+        subprocess.check_output(cmd_split)
+    except subprocess.CalledProcessError as e:
+
+        print(e.output)
+        exit(1)
+
 # +++your code here+++
 # Write functions and modify main() to call them
 
@@ -28,7 +59,11 @@ def main():
     parser.add_argument('--todir', help='dest dir for special files')
     parser.add_argument('--tozip', help='dest zipfile for special files')
     # TODO need an argument to pick up 'from_dir'
+    parser.add_argument('from_dir', help='directory with special files')
     args = parser.parse_args()
+    directory=args.from_dir
+    todir=args.todir
+    zipper=args.tozip
 
     # TODO you must write your own code to get the cmdline args.
     # Read the docs and examples for the argparse module about how to do this.
@@ -39,7 +74,17 @@ def main():
 
     # +++your code here+++
     # Call your functions
+    get_path= get_special_paths(directory)
+    print('\n'.join(get_path))
 
+    if todir:
+        copy_to(get_path,todir)
+    elif zipper:
+        zip_to(get_path,todir)
+    else:
+        print('/n'.join(get_path))
+
+    
 
 if __name__ == "__main__":
     main()
